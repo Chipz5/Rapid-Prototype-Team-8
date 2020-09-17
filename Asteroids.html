@@ -10,10 +10,33 @@
 
 <body>
 
+    <canvas id = "gameCanvas" width = "700" height = "500">
+    </canvas>
+
+    <script>
+        const FPS = 30;
+
+        var canv = document.getElementById("gameCanvas");
+        var context = canv.getContext("2d");
+
+        setInterval(Update, 1000/FPS);
+
+        function Update()
+        {
+            //Draw Space
+            context.fillStyle = "black";
+            context.fillRect(0, 0, canv.width, canv.height);
+
+
+            //Draw Ship
+
+            //Rotate Ship
+
+            //Move Ship
 
 
 
-
+        }
 
 
     </script>
