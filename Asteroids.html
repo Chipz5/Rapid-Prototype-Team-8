@@ -3,7 +3,7 @@
 
 <head>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
-    <script type = "text/javascript" src = "Player.js"></script>
+    <!-- <script type = "text/javascript" src = "Player.js"></script> -->
     <meta charset="UTF-8">
     <title>Asteroids</title>
     <style></style>
@@ -48,6 +48,8 @@
 
         var asteroids;
 
+        var score = 0;
+
         function Preload()
         {
             this.load.setBaseURL('http://labs.phaser.io');
@@ -59,7 +61,7 @@
             this.load.image('asteroids', 'assets/games/asteroids/bullets.png');
             this.load.image('asteroids1', 'assets/games/asteroids/ship.png');
             this.load.image('asteroids2', 'assets/games/asteroids/ship.png');
-
+            
 
         }
 
@@ -73,12 +75,12 @@
 
                 function Bullet (scene)
                 {
-                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'space', 'blaster');
+                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'bullet', 'blaster');
 
                     this.setBlendMode(1);
                     this.setDepth(1);
 
-                    this.speed = 1000;
+                    this.speed = 300;
                     this.lifespan = 1000;
 
                     this._temp = new Phaser.Math.Vector2();
@@ -160,13 +162,13 @@
 
             bullets = this.physics.add.group({
                 classType: Bullet,
-                maxSize: 30,
+                maxSize: 300,
                 runChildUpdate: true
             });
 
             fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-            text = this.add.text(32, 32, '', {font: '32x Courier', fill:'#ffffff'});
+            text = this.add.text(32, 32, 'Score: 0', {fontSize: '32px',  fill:'#ffffff'});
 
         }
             //asteroids = this.physics.add.image(400, 300, 'asteroids');
@@ -249,7 +251,7 @@
 
               });
 
-        }
+        
 
         function Update()
         {
@@ -288,18 +290,18 @@
                 }
             }
 
-            text.setText('Score: ');
+            text.setText('Score: ' + score);
 
         }
 
         function enemyHitsPlayer (player,asteroids) {
           //asteroids = this.physics.add.group();
 
-  //enable physics in them
+            //enable physics in them
           //asteroids.enableBody = true;
           var asteriod;
           for (var i = 0; i < 2; i++) {
-    //add sprite
+          //add sprite
               asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
               //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
               asteriod.body.width = Phaser.Math.Between(10, 40)/10;
