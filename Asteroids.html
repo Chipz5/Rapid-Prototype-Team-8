@@ -37,18 +37,21 @@
 
         var game = new Phaser.Game(config);
 
-        var text;
-
         var keys;
-
         var canv = document.getElementById("gameCanvas");
         var context = canv.getContext("2d");
         var bullets;
         var fire;
-
         var asteroids;
 
+        var text;
         var score = 0;
+        var life = 3;
+        var lifeText;
+        var gameOverText;
+
+        var isPlayerDied = false;
+        var isGameOver = false;
 
         function Preload()
         {
@@ -67,6 +70,7 @@
 
         function Create()
         {
+   
             var Bullet = new Phaser.Class({
 
                 Extends: Phaser.Physics.Arcade.Image,
@@ -119,35 +123,43 @@
 
             });
 
+
+
+
+
             var bg = this.add.tileSprite(400, 300, 800, 600, 'background').setScrollFactor(0);
 
             var particles = this.add.particles('space');
-            var emitter = particles.createEmitter({
-                frame: 'blue',
-                speed: 100,
-                lifespan: {
-                    onEmit: function (particle, key, t, value)
-                    {
-                        return Phaser.Math.Percent(player.body.speed, 0, 300) * 2000;
-                    }
-                },
-                alpha: {
-                    onEmit: function (particle, key, t, value)
-                    {
-                        return Phaser.Math.Percent(player.body.speed, 0, 300);
-                    }
-                },
-                angle: {
-                    onEmit: function (particle, key, t, value)
-                    {
-                        var v = Phaser.Math.Between(-10, 10);
-                        return (player.angle - 180) + v;
-                    }
-                },
-                scale: { start: 0.3, end: 0 },
-                blendMode: 'ADD'
-            });
 
+                var emitter = particles.createEmitter({
+                    frame: 'blue',
+                    speed: 100,
+                    lifespan: {
+                        onEmit: function (particle, key, t, value)
+                        {
+                            return Phaser.Math.Percent(player.body.speed, 0, 300) * 2000;
+                        }
+                    },
+                    alpha: {
+                        onEmit: function (particle, key, t, value)
+                        {
+                            return Phaser.Math.Percent(player.body.speed, 0, 300);
+                        }
+                    },
+                    angle: {
+                        onEmit: function (particle, key, t, value)
+                        {
+                            var v = Phaser.Math.Between(-10, 10);
+                            return (player.angle - 180) + v;
+                        }
+                    },
+                    scale: { start: 0.3, end: 0 },
+                    blendMode: 'ADD'
+                });
+
+
+
+            
             player = this.physics.add.image(400, 300, 'ship');
 
             player.setDamping(true);
@@ -168,21 +180,30 @@
 
             fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-            text = this.add.text(32, 32, 'Score: 0', {fontSize: '32px',  fill:'#ffffff'});
+            respawnKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
-        }
+            text = this.add.text(32, 32, 'Score: 0', {fontSize: '32px',  fill:'#ffffff'});
+            lifeText = this.add.text(600, 32, 'Life: 0', {fontSize: '32px',  fill:'#ffffff'});
+            gameOverText = this.add.text(275, 268, "Game Over!", {fontSize: '40px', fill:'#ffffff'});
+            gameOverText.setVisible(false);
+
+
+
+
+
+
             //asteroids = this.physics.add.image(400, 300, 'asteroids');
             asteroids = this.physics.add.group();
 
-    //enable physics in them
+            //enable physics in them
             asteroids.enableBody = true;
 
-    //phaser's random number generator
+            //phaser's random number generator
             var numAsteroids = Phaser.Math.Between(10,20);
             var asteriod;
 
             for (var i = 0; i < numAsteroids; i++) {
-      //add sprite
+                //add sprite
                 asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
                 asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
                 //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
@@ -195,17 +216,18 @@
                 asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
                 asteriod.body.immovable = true;
                 asteriod.body.collideWorldBounds = false;
-              }
-              var asteroids1 = this.physics.add.group()
-              asteroids1.enableBody = true;
-              var asteriod;
-              this.physics.add.collider(bullets,asteroids, function(player,asteroids){
+            }
+            var asteroids1 = this.physics.add.group()
+            asteroids1.enableBody = true;
+            var asteriod;
+            this.physics.add.collider(bullets,asteroids, function(player,asteroids){
 
                 var x = asteroids.x;
                 var y = asteroids.y;
                 asteroids.destroy();
+                score+=100;
                 for (var i = 0; i < 2; i++) {
-          //add sprite
+            //add sprite
                     asteriod = asteroids1.create(x,y, 'asteroids1');
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     asteriod.body.width = Phaser.Math.Between(10, 40)/10;
@@ -216,20 +238,21 @@
                     asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
                     asteriod.body.immovable = true;
                     asteriod.body.collideWorldBounds = false;
-                  }
+                }
 
-              });
+            });
 
-              var asteroids2 = this.physics.add.group()
-              asteroids2.enableBody = true;
-              var asteriod;
-              this.physics.add.collider(bullets,asteroids1, function(player,asteroids1){
+            var asteroids2 = this.physics.add.group()
+            asteroids2.enableBody = true;
+            var asteriod;
+            this.physics.add.collider(bullets,asteroids1, function(player,asteroids1){
 
                 var x = asteroids1.x;
                 var y = asteroids1.y;
                 asteroids1.destroy();
+                score+=100;
                 for (var i = 0; i < 2; i++) {
-          //add sprite
+                //add sprite
                     asteriod = asteroids2.create(x,y, 'asteroids2');
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     asteriod.body.width = Phaser.Math.Between(10, 40)/10;
@@ -240,57 +263,110 @@
                     asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
                     asteriod.body.immovable = true;
                     asteriod.body.collideWorldBounds = false;
-                  }
+                }
 
-              });
+            });
 
-              this.physics.add.collider(bullets,asteroids2, function(player,asteroids2){
+            this.physics.add.overlap(bullets,asteroids2, function(player,asteroids2){
 
                 asteroids2.destroy();
+                score+=100;
 
+            });
 
-              });
+            
+            this.physics.add.collider(player, asteroids, enemyHitsPlayer, function(player, asteroids)
+            {
+                player.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+            this.physics.add.collider(player, asteroids1, enemyHitsPlayer, function(player, asteroids)
+            {
+                player.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+            this.physics.add.collider(player, asteroids2, enemyHitsPlayer, function(player, asteroids)
+            {
+                player.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+        }
+  
 
         
 
         function Update()
         {
 
-            //this.physics.overlap(asteroids, player, enemyHitsPlayer, null, this);
-            if (keys.up.isDown)
+            if(life == 0)
             {
-                this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
-            }
-            else
-            {
-                player.setAcceleration(0);
+                isGameOver = true;
             }
 
-            if (keys.left.isDown)
+            if(!isGameOver)
             {
-                player.setAngularVelocity(-300);
-            }
-            else if (keys.right.isDown)
-            {
-                player.setAngularVelocity(300);
-            }
-            else
-            {
-                player.setAngularVelocity(0);
-            }
-
-
-            if (fire.isDown)
-            {
-                var bullet = bullets.get();
-
-                if (bullet)
+                if (keys.up.isDown)
                 {
-                    bullet.fire(player);
+                    this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
                 }
+                else
+                {
+                    player.setAcceleration(0);
+                }
+
+                if (keys.left.isDown)
+                {
+                    player.setAngularVelocity(-300);
+                }
+                else if (keys.right.isDown)
+                {
+                    player.setAngularVelocity(300);
+                }
+                else
+                {
+                    player.setAngularVelocity(0);
+                }
+
+
+                if (fire.isDown && !isPlayerDied)
+                {
+                    var bullet = bullets.get();
+
+                    if (bullet)
+                    {
+                        bullet.fire(player);
+                    }
+
+                    //player.enableBody(true, true);
+                }
+
+                if (respawnKey.isDown && isPlayerDied)
+                {
+                    player.enableBody(true, 400, 300, true, true);
+                    //player.x = 300;
+                    //player.y = 400;
+                    isPlayerDied = false;
+                    score++;
+                }
+
+                
+            }
+            else{
+                gameOverText.setVisible(true);
             }
 
             text.setText('Score: ' + score);
+            lifeText.setText('Life:' + life);
+
+        }
+
+        function Respawn(){
 
         }
 
@@ -299,6 +375,7 @@
 
             //enable physics in them
           //asteroids.enableBody = true;
+          /*
           var asteriod;
           for (var i = 0; i < 2; i++) {
           //add sprite
@@ -313,10 +390,15 @@
               asteriod.body.immovable = true;
               asteriod.body.collideWorldBounds = false;
             }
+            */
 
+            //Score+=1;
 
 
         }
+
+
+
 
     </script>
 </body>
