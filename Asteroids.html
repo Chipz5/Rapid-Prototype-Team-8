@@ -34,7 +34,7 @@
 
         const FPS = 30;
         const SHIP_SIZE = 30;
-        
+
         var game = new Phaser.Game(config);
 
         var text;
@@ -46,19 +46,25 @@
         var bullets;
         var fire;
 
+        var asteroids;
+
         function Preload()
         {
             this.load.setBaseURL('http://labs.phaser.io');
 
-            this.load.image('background', 'assets/tests/space/nebula.jpg'); 
+            this.load.image('background', 'assets/tests/space/nebula.jpg');
             this.load.image('bullet', 'assets/games/asteroids/bullets.png');
             this.load.image('ship', 'assets/games/asteroids/ship.png');
             this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
+            this.load.image('asteroids', 'assets/games/asteroids/bullets.png');
+            this.load.image('asteroids1', 'assets/games/asteroids/ship.png');
+            this.load.image('asteroids2', 'assets/games/asteroids/ship.png');
+
 
         }
 
         function Create()
-        {            
+        {
             var Bullet = new Phaser.Class({
 
                 Extends: Phaser.Physics.Arcade.Image,
@@ -163,10 +169,92 @@
             text = this.add.text(32, 32, '', {font: '32x Courier', fill:'#ffffff'});
 
         }
+            //asteroids = this.physics.add.image(400, 300, 'asteroids');
+            asteroids = this.physics.add.group();
 
+    //enable physics in them
+            asteroids.enableBody = true;
+
+    //phaser's random number generator
+            var numAsteroids = Phaser.Math.Between(10,20);
+            var asteriod;
+
+            for (var i = 0; i < numAsteroids; i++) {
+      //add sprite
+                asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
+                asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
+                //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+                asteriod.body.width = Phaser.Math.Between(10, 40)/10;
+                asteriod.body.height = asteriod.body.width;
+                //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+                //physics properties
+                asteriod.setScale(Phaser.Math.Between(10, 40)/10);
+                asteriod.body.velocity.x = Phaser.Math.Between(-20, 20);
+                asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
+                asteriod.body.immovable = true;
+                asteriod.body.collideWorldBounds = false;
+              }
+              var asteroids1 = this.physics.add.group()
+              asteroids1.enableBody = true;
+              var asteriod;
+              this.physics.add.collider(bullets,asteroids, function(player,asteroids){
+
+                var x = asteroids.x;
+                var y = asteroids.y;
+                asteroids.destroy();
+                for (var i = 0; i < 2; i++) {
+          //add sprite
+                    asteriod = asteroids1.create(x,y, 'asteroids1');
+                    //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+                    asteriod.body.width = Phaser.Math.Between(10, 40)/10;
+                    asteriod.body.height = asteriod.body.width;
+                    //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+                    //physics properties
+                    asteriod.body.velocity.x = Phaser.Math.Between(-20, 20);
+                    asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
+                    asteriod.body.immovable = true;
+                    asteriod.body.collideWorldBounds = false;
+                  }
+
+              });
+
+              var asteroids2 = this.physics.add.group()
+              asteroids2.enableBody = true;
+              var asteriod;
+              this.physics.add.collider(bullets,asteroids1, function(player,asteroids1){
+
+                var x = asteroids1.x;
+                var y = asteroids1.y;
+                asteroids1.destroy();
+                for (var i = 0; i < 2; i++) {
+          //add sprite
+                    asteriod = asteroids2.create(x,y, 'asteroids2');
+                    //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+                    asteriod.body.width = Phaser.Math.Between(10, 40)/10;
+                    asteriod.body.height = asteriod.body.width;
+                    //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+                    //physics properties
+                    asteriod.body.velocity.x = Phaser.Math.Between(-20, 20);
+                    asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
+                    asteriod.body.immovable = true;
+                    asteriod.body.collideWorldBounds = false;
+                  }
+
+              });
+
+              this.physics.add.collider(bullets,asteroids2, function(player,asteroids2){
+
+                asteroids2.destroy();
+
+
+              });
+
+        }
 
         function Update()
         {
+
+            //this.physics.overlap(asteroids, player, enemyHitsPlayer, null, this);
             if (keys.up.isDown)
             {
                 this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
@@ -204,9 +292,31 @@
 
         }
 
+        function enemyHitsPlayer (player,asteroids) {
+          //asteroids = this.physics.add.group();
+
+  //enable physics in them
+          //asteroids.enableBody = true;
+          var asteriod;
+          for (var i = 0; i < 2; i++) {
+    //add sprite
+              asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
+              //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+              asteriod.body.width = Phaser.Math.Between(10, 40)/10;
+              asteriod.body.height = asteriod.body.width;
+              //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+              //physics properties
+              asteriod.body.velocity.x = Phaser.Math.Between(-20, 20);
+              asteriod.body.velocity.y = Phaser.Math.Between(-20, 20);
+              asteriod.body.immovable = true;
+              asteriod.body.collideWorldBounds = false;
+            }
+
+
+
+        }
 
     </script>
 </body>
 
 </html>
-
