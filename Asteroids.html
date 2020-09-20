@@ -53,6 +53,8 @@
         var isPlayerDied = false;
         var isGameOver = false;
 
+        var fireTime = 50;
+
         function Preload()
         {
             this.load.setBaseURL('http://labs.phaser.io');
@@ -174,7 +176,7 @@
 
             bullets = this.physics.add.group({
                 classType: Bullet,
-                maxSize: 300,
+                maxSize: 5,
                 runChildUpdate: true
             });
 
@@ -301,7 +303,7 @@
 
         
 
-        function Update()
+        function Update(time)
         {
 
             if(life == 0)
@@ -334,13 +336,14 @@
                 }
 
 
-                if (fire.isDown && !isPlayerDied)
+                if (fire.isDown && !isPlayerDied && time > fireTime)
                 {
                     var bullet = bullets.get();
 
                     if (bullet)
                     {
                         bullet.fire(player);
+                        fireTime = time + 50;
                     }
 
                     //player.enableBody(true, true);
