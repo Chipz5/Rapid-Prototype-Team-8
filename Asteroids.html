@@ -222,7 +222,7 @@
             var asteroids1 = this.physics.add.group()
             asteroids1.enableBody = true;
             var asteriod;
-            this.physics.add.collider(bullets,asteroids, function(player,asteroids){
+            this.physics.add.collider(bullets,asteroids, function(player,asteroids){    
 
                 var x = asteroids.x;
                 var y = asteroids.y;
@@ -286,16 +286,18 @@
 
             this.physics.add.collider(player, asteroids1, enemyHitsPlayer, function(player, asteroids)
             {
-                player.disableBody(true, true);
-                life--;
-                isPlayerDied = true;
+                // player.disableBody(true, true);
+                // life--;
+                // isPlayerDied = true;
+                player.setBounce(10, 10);
             });
 
             this.physics.add.collider(player, asteroids2, enemyHitsPlayer, function(player, asteroids)
             {
-                player.disableBody(true, true);
-                life--;
-                isPlayerDied = true;
+                // player.disableBody(true, true);
+                // life--;
+                // isPlayerDied = true;
+                player.setBounce(10, 10);
             });
 
         }
