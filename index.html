@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
     <!-- <script type = "text/javascript" src = "Player.js"></script> -->
     <script src="./phaser.js"></script>
     <meta charset="UTF-8">
@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <canvas id = "gameCanvas" width = "350" height = "500">
+    <canvas id = "gameCanvas" width = "50" height = "0">
     </canvas>
 
     <script>
@@ -19,8 +19,8 @@
 
         var config = {
             type: Phaser.AUTO,
-            width: 800,
-            height: 600,
+            width: 1400,
+            height: 700,
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -75,16 +75,16 @@
 
             //this.load.setBaseURL('http://labs.phaser.io');
 
-            this.load.image('background', 'assets/tests/space/nebula.jpg');
-            this.load.image('bullet', 'assets/games/asteroids/bullets.png');
+            //this.load.image('background', 'assets/tests/space/nebula.jpg');
+            this.load.image('bullet', 'New_Laser_Blast.png');
 
             
             //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
             this.load.atlas('space', 'space.png', 'space.json');
 
-            this.load.image('asteroids', 'assets/games/asteroids/bullets.png');
-            this.load.image('asteroids1', 'assets/games/asteroids/ship.png');
-            this.load.image('asteroids2', 'assets/games/asteroids/ship.png');
+            this.load.image('asteroids', 'Jellyfish.png');
+            this.load.image('asteroids1', 'Mid_Jellyfish.png');
+            this.load.image('asteroids2', 'New_Small_Jellyfish.png');
             
 
         }
@@ -191,12 +191,11 @@
             player.setMaxVelocity(200);
             player.setBounce(1, 1);
             player.setCollideWorldBounds(true);
-
-            emiterPosition = player.getBottomRight();
-
+            player.setScale(0.5);
 
             keys = this.input.keyboard.createCursorKeys();
-            emitter.startFollow(emiterPosition);
+            emitter.startFollow(player);
+
 
 
             bullets = this.physics.add.group({
@@ -237,7 +236,7 @@
                 asteriod.body.height = asteriod.body.width;
                 //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                 //physics properties
-                asteriod.setScale(Phaser.Math.Between(10, 40)/10);
+                asteriod.setScale(Phaser.Math.Between(10, 40)/50);
                 asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
                 asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
                 asteriod.body.immovable = true;
@@ -331,8 +330,6 @@
 
         function Update(time)
         {
-            emiterPosition = player.getBottomRight();
-
             if(life == 0)
             {
                 isGameOver = true;
@@ -340,6 +337,21 @@
 
             if(!isGameOver)
             {
+
+                console.log(player.rotation);
+                if(player.rotation < -1.5 || player.rotation > 1.5)
+                {
+                    player.flipY = true;
+                   
+                }
+                else if(-1.5  <=player.rotation <= 1.5)
+                {
+                    player.flipY = false;
+                    console.log("false");
+                }
+
+
+
                 if (keys.up.isDown)
                 {
                     this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
@@ -352,6 +364,7 @@
                 if (keys.left.isDown)
                 {
                     player.setAngularVelocity(-300);
+
                 }
                 else if (keys.right.isDown)
                 {
