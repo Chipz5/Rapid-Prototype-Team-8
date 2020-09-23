@@ -1,0 +1,1 @@
+Run node-v12.18.4-x64 ,then follow the command instruction of the image included.
