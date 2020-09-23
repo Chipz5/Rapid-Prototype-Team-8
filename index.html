@@ -57,21 +57,31 @@
         var isGameOver = false;
 
         var fireTime = 50;
+        var bg;
+        var emiterPosition;
+        var player;
 
         function Preload()
         {
-            //this.load.setBaseURL('http://labs.phaser.io');
+            
 
             //this.load.setBaseURL('https://github.com/w853245475/Rapid-Prototype-Team-8/blob/Dev-Pix/Assets/');
             this.load.setBaseURL('./Assets/');
             //this.load.image('background', "./Assets/Background.jpg");
             this.load.image('background', "Background.jpg");
 
+            this.load.image('ship', 'Sub.png');
+  
+
+            //this.load.setBaseURL('http://labs.phaser.io');
 
             this.load.image('background', 'assets/tests/space/nebula.jpg');
             this.load.image('bullet', 'assets/games/asteroids/bullets.png');
-            this.load.image('ship', 'Sub.png');
-            this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
+
+            
+            //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
+            this.load.atlas('space', 'space.png', 'space.json');
+
             this.load.image('asteroids', 'assets/games/asteroids/bullets.png');
             this.load.image('asteroids1', 'assets/games/asteroids/ship.png');
             this.load.image('asteroids2', 'assets/games/asteroids/ship.png');
@@ -134,14 +144,14 @@
 
             });
 
+            bg = this.add.image(600, 400, 'background');
 
-
-
+            player = this.physics.add.image(400, 300, 'ship');
+            player.flipX = true;
 
             //var bg = this.add.tileSprite(400, 300, 800, 600, 'background').setScrollFactor(0);
-
-            var bg = this.add.image(600, 400, 'background');
-            console.log(bg);
+            
+ 
 
             var particles = this.add.particles('space');
 
@@ -174,7 +184,7 @@
 
 
             
-            player = this.physics.add.image(400, 300, 'ship');
+
 
             player.setDamping(true);
             player.setDrag(0.99);
@@ -182,9 +192,12 @@
             player.setBounce(1, 1);
             player.setCollideWorldBounds(true);
 
+            emiterPosition = player.getBottomRight();
+
 
             keys = this.input.keyboard.createCursorKeys();
-            emitter.startFollow(player);
+            emitter.startFollow(emiterPosition);
+
 
             bullets = this.physics.add.group({
                 classType: Bullet,
@@ -318,6 +331,7 @@
 
         function Update(time)
         {
+            emiterPosition = player.getBottomRight();
 
             if(life == 0)
             {
