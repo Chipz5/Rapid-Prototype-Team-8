@@ -59,7 +59,14 @@
         var fireTime = 50;
         var bg;
         var emiterPosition;
+        
         var player;
+        var playerImage2;
+        var playerImage3;
+
+        var playerCollideLifeCounter = 3;
+
+        var isFirePowered = false;
 
         function Preload()
         {
@@ -71,13 +78,15 @@
             this.load.image('background', "Background.jpg");
 
             this.load.image('ship', 'Sub.png');
+            this.load.image('ship2', 'Damage1.png');
+            this.load.image('ship3', 'Damage3.png');
   
 
             //this.load.setBaseURL('http://labs.phaser.io');
 
             //this.load.image('background', 'assets/tests/space/nebula.jpg');
             this.load.image('bullet', 'New_Laser_Blast.png');
-
+            this.load.image('powerBullet', 'Charged_Laser_Blast');
             
             //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
             this.load.atlas('space', 'space.png', 'space.json');
@@ -144,10 +153,82 @@
 
             });
 
+
+
+            var Bullet = new Phaser.Class({
+
+                Extends: Phaser.Physics.Arcade.Image,
+
+                initialize:
+
+                function Bullet (scene)
+                {
+                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'bullet', 'blaster');
+
+                    this.setBlendMode(1);
+                    this.setDepth(1);
+
+                    this.speed = 300;
+                    this.lifespan = 1000;
+
+                    this._temp = new Phaser.Math.Vector2();
+                },
+
+                fire: function (player)
+                {
+                    this.lifespan = 1000;
+
+                    this.setActive(true);
+                    this.setVisible(true);
+
+                    this.setAngle(player.body.rotation);
+                    this.setPosition(player.x, player.y);
+                    this.body.reset(player.x, player.y);
+
+                    var angle = Phaser.Math.DegToRad(player.body.rotation);
+
+                    this.scene.physics.velocityFromRotation(angle, this.speed, this.body.velocity);
+
+                    this.body.velocity.x *= 2;
+                    this.body.velocity.y *= 2;
+                },
+
+                update: function (time, delta)
+                {
+                    this.lifespan -= delta;
+
+                    if (this.lifespan <= 0)
+                    {
+                        this.setActive(false);
+                        this.setVisible(false);
+                        this.body.stop();
+                    }
+                }
+
+            });
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
             bg = this.add.image(600, 400, 'background');
 
-            player = this.physics.add.image(400, 300, 'ship');
+            player = this.physics.add.image(700, 350, 'ship');
+            playerImage2 = this.physics.add.image(700, 350, 'ship2');
+            playerImage3 = this.physics.add.image(700, 350, 'ship3');
+
             player.flipX = true;
+            playerImage2.flipX = true;
+            playerImage3.flipX = true;
 
             //var bg = this.add.tileSprite(400, 300, 800, 600, 'background').setScrollFactor(0);
             
@@ -193,6 +274,25 @@
             player.setCollideWorldBounds(true);
             player.setScale(0.5);
 
+            playerImage2.setDamping(true);
+            playerImage2.setDrag(0.99);
+            playerImage2.setMaxVelocity(200);
+            playerImage2.setBounce(1, 1);
+            playerImage2.setCollideWorldBounds(true);
+            playerImage2.setScale(0.5);
+
+            playerImage3.setDamping(true);
+            playerImage3.setDrag(0.99);
+            playerImage3.setMaxVelocity(200);
+            playerImage3.setBounce(1, 1);
+            playerImage3.setCollideWorldBounds(true);
+            playerImage3.setScale(0.5);
+
+            playerImage2.disableBody(true, true);
+            playerImage3.disableBody(true, true);
+
+            console.log(player);
+
             keys = this.input.keyboard.createCursorKeys();
             emitter.startFollow(player);
 
@@ -237,8 +337,10 @@
                 //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                 //physics properties
                 asteriod.setScale(Phaser.Math.Between(10, 40)/50);
-                asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
+                // asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
+                // asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
+                asteriod.body.velocity.x = Phaser.Math.Between(2, 6);
+                asteriod.body.velocity.y = Phaser.Math.Between(2, 6);
                 asteriod.body.immovable = true;
                 asteriod.body.collideWorldBounds = false;
             }
@@ -259,8 +361,8 @@
                     asteriod.body.height = asteriod.body.width;
                     //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                     //physics properties
-                    asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                    asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
+                    //asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
+                    //asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
                     asteriod.body.immovable = true;
                     asteriod.body.collideWorldBounds = false;
                 }
@@ -284,8 +386,8 @@
                     asteriod.body.height = asteriod.body.width;
                     //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                     //physics properties
-                    asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                    asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
+                    //asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
+                    //asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
                     asteriod.body.immovable = true;
                     asteriod.body.collideWorldBounds = false;
                 }
@@ -313,6 +415,7 @@
                 // life--;
                 // isPlayerDied = true;
                 player.setBounce(10, 10);
+                playerCollideLifeCounter--;
             });
 
             this.physics.add.collider(player, asteroids2, enemyHitsPlayer, function(player, asteroids)
@@ -335,26 +438,33 @@
                 isGameOver = true;
             }
 
+            if(playerCollideLifeCounter == 3)
+            {
+                //player = this.physics.add.image('ship');
+                //player.texture = 'asteroids';
+            }
+
+
+
             if(!isGameOver)
             {
 
-                console.log(player.rotation);
+                //console.log(player.rotation);
                 if(player.rotation < -1.5 || player.rotation > 1.5)
                 {
                     player.flipY = true;
-                   
                 }
                 else if(-1.5  <=player.rotation <= 1.5)
                 {
-                    player.flipY = false;
-                    console.log("false");
+                    player.flipY = false;                    
+                    //console.log("false");
                 }
-
-
 
                 if (keys.up.isDown)
                 {
                     this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
+                    this.physics.velocityFromRotation(playerImage2.rotation, 200, playerImage2.body.acceleration);
+                    this.physics.velocityFromRotation(playerImage3.rotation, 200, playerImage3.body.acceleration);
                 }
                 else
                 {
@@ -378,12 +488,19 @@
 
                 if (fire.isDown && !isPlayerDied && time > fireTime)
                 {
-                    var bullet = bullets.get();
-
-                    if (bullet)
+                    if(!isFirePowered)
                     {
-                        bullet.fire(player);
-                        fireTime = time + 50;
+                        var bullet = bullets.get();
+
+                        if (bullet)
+                        {
+                            bullet.fire(player);
+                            fireTime = time + 50;
+                        }
+                    }
+                    else
+                    {
+
                     }
 
                     //player.enableBody(true, true);
@@ -391,7 +508,7 @@
 
                 if (respawnKey.isDown && isPlayerDied)
                 {
-                    player.enableBody(true, 400, 300, true, true);
+                    player.enableBody(true, 700, 350, true, true);
                     //player.x = 300;
                     //player.y = 400;
                     isPlayerDied = false;
