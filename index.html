@@ -365,14 +365,12 @@
             playerImage2.setDamping(true);
             playerImage2.setDrag(0.99);
             playerImage2.setMaxVelocity(200);
-            playerImage2.setBounce(1, 1);
             playerImage2.setCollideWorldBounds(true);
             playerImage2.setScale(0.5);
 
             playerImage3.setDamping(true);
             playerImage3.setDrag(0.99);
             playerImage3.setMaxVelocity(200);
-            playerImage3.setBounce(1, 1);
             playerImage3.setCollideWorldBounds(true);
             playerImage3.setScale(0.5);
 
@@ -714,6 +712,8 @@
           this.physics.world.wrap(med_jellyfish);
           this.physics.world.wrap(small_jellyfish);
           this.physics.world.wrap(player);
+          this.physics.world.wrap(playerImage2);
+          this.physics.world.wrap(playerImage3);
           emiterPosition = player.getBottomRight();
 
             if(life == 0)
