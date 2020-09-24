@@ -45,8 +45,10 @@
         var context = canv.getContext("2d");
         var bullets;
         var fire;
-        var asteroids;
-
+        var jellyfish;
+        var med_jellyfish;
+        var small_jellfish;
+        var sparks;
         var text;
         var score = 0;
         var life = 3;
@@ -96,11 +98,21 @@
             this.load.image('asteroids2', 'New_Small_Jellyfish.png');
             
 
+
+            //this.load.setBaseURL('http://labs.phaser.io');
+
+            this.load.image('background', 'assets/tests/space/nebula.jpg');
+
+            this.load.image('jellyfish', 'Jellyfish.png');
+            this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
+            this.load.image('small_jellfish', 'Small_Jellyfish.png');
+            this.load.image('shock', 'Shock_Field.png');
+
+
         }
 
         function Create()
         {
-   
             var Bullet = new Phaser.Class({
 
                 Extends: Phaser.Physics.Arcade.Image,
@@ -154,16 +166,15 @@
             });
 
 
-
-            var Bullet = new Phaser.Class({
+            var Shock = new Phaser.Class({
 
                 Extends: Phaser.Physics.Arcade.Image,
 
                 initialize:
 
-                function Bullet (scene)
+                function Shock (scene)
                 {
-                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'bullet', 'blaster');
+                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'shock');
 
                     this.setBlendMode(1);
                     this.setDepth(1);
@@ -174,25 +185,24 @@
                     this._temp = new Phaser.Math.Vector2();
                 },
 
-                fire: function (player)
+                shock: function (jellyfish)
                 {
-                    this.lifespan = 1000;
+                    this.lifespan = 100;
 
                     this.setActive(true);
                     this.setVisible(true);
 
-                    this.setAngle(player.body.rotation);
-                    this.setPosition(player.x, player.y);
-                    this.body.reset(player.x, player.y);
+                    //this.setAngle(jellyfish.body.rotation);
+                    this.setPosition(jellyfish.x, jellyfish.y);
+                    //this.body.reset(300, 200);
 
-                    var angle = Phaser.Math.DegToRad(player.body.rotation);
+                    //var angle = Phaser.Math.DegToRad(jellyfish.body.rotation);
 
-                    this.scene.physics.velocityFromRotation(angle, this.speed, this.body.velocity);
+                    this.scene.physics.velocityFromRotation(90, this.speed, this.body.velocity);
 
-                    this.body.velocity.x *= 2;
-                    this.body.velocity.y *= 2;
+                    //this.body.velocity.x *= 2;
+                    //this.body.velocity.y *= 2;
                 },
-
                 update: function (time, delta)
                 {
                     this.lifespan -= delta;
@@ -264,14 +274,13 @@
 
 
 
-            
 
 
             player.setDamping(true);
             player.setDrag(0.99);
             player.setMaxVelocity(200);
             player.setBounce(1, 1);
-            player.setCollideWorldBounds(true);
+            //player.setCollideWorldBounds(true);
             player.setScale(0.5);
 
             playerImage2.setDamping(true);
@@ -304,6 +313,12 @@
                 runChildUpdate: true
             });
 
+            sparks = this.physics.add.group({
+                classType: Shock,
+                maxSize: 5,
+                runChildUpdate: true
+            });
+
             fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
             respawnKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
@@ -313,126 +328,129 @@
             gameOverText = this.add.text(275, 268, "Game Over!", {fontSize: '40px', fill:'#ffffff'});
             gameOverText.setVisible(false);
 
-
-
-
-
-
-            //asteroids = this.physics.add.image(400, 300, 'asteroids');
-            asteroids = this.physics.add.group();
+            jellyfish = this.physics.add.group();
 
             //enable physics in them
-            asteroids.enableBody = true;
+            jellyfish.enableBody = true;
 
     //phaser's random number generator
-            var numAsteroids = Phaser.Math.Between(20,40);
-            var asteriod;
+            var numJellies = Phaser.Math.Between(5,10);
+            var jellies;
 
-            for (var i = 0; i < numAsteroids; i++) {
+            for (var i = 0; i < numJellies; i++) {
                 //add sprite
-                asteriod = asteroids.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'asteroids');
+                jellies = jellyfish.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jellyfish');
                 //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
-                asteriod.body.width = Phaser.Math.Between(10, 40)/10;
-                asteriod.body.height = asteriod.body.width;
+                jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                jellies.body.height = jellies.body.width;
                 //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                 //physics properties
-                asteriod.setScale(Phaser.Math.Between(10, 40)/50);
-                // asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                // asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
-                asteriod.body.velocity.x = Phaser.Math.Between(2, 6);
-                asteriod.body.velocity.y = Phaser.Math.Between(2, 6);
-                asteriod.body.immovable = true;
-                asteriod.body.collideWorldBounds = false;
+                jellies.setScale(Phaser.Math.Between(4, 8)/10);
+                jellies.body.velocity.x = Phaser.Math.Between(-60, 60);
+                jellies.body.velocity.y = Phaser.Math.Between(-60, 60);
+                jellies.body.immovable = true;
+                jellies.body.collideWorldBounds = false;
             }
-            var asteroids1 = this.physics.add.group()
-            asteroids1.enableBody = true;
-            var asteriod;
-            this.physics.add.collider(bullets,asteroids, function(player,asteroids){    
+            med_jellyfish = this.physics.add.group()
+            med_jellyfish.enableBody = true;
+            var jellies;
+            this.physics.add.collider(bullets,jellyfish, function(player,jellyfish){
 
-                var x = asteroids.x;
-                var y = asteroids.y;
-                asteroids.destroy();
+                var x = jellyfish.x;
+                var y = jellyfish.y;
+                jellyfish.destroy();
                 score+=100;
                 for (var i = 0; i < 2; i++) {
             //add sprite
-                    asteriod = asteroids1.create(x,y, 'asteroids1');
+                    jellies = med_jellyfish.create(x,y, 'med_jellyfish');
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
-                    asteriod.body.width = Phaser.Math.Between(10, 40)/10;
-                    asteriod.body.height = asteriod.body.width;
+                    jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                    jellies.body.height = jellies.body.width;
                     //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                     //physics properties
-                    //asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                    //asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
-                    asteriod.body.immovable = true;
-                    asteriod.body.collideWorldBounds = false;
+                    jellies.body.velocity.x = Phaser.Math.Between(-80, 80);
+                    jellies.body.velocity.y = Phaser.Math.Between(-80, 80);
+                    jellies.body.immovable = true;
+                    jellies.body.collideWorldBounds = false;
                 }
 
             });
 
-            var asteroids2 = this.physics.add.group()
-            asteroids2.enableBody = true;
-            var asteriod;
-            this.physics.add.collider(bullets,asteroids1, function(player,asteroids1){
+            small_jellfish = this.physics.add.group()
+            small_jellfish.enableBody = true;
+            var jellies;
+            this.physics.add.collider(bullets,med_jellyfish, function(player,med_jellyfish){
 
-                var x = asteroids1.x;
-                var y = asteroids1.y;
-                asteroids1.destroy();
+                var x = med_jellyfish.x;
+                var y = med_jellyfish.y;
+                med_jellyfish.destroy();
                 score+=100;
                 for (var i = 0; i < 2; i++) {
                 //add sprite
-                    asteriod = asteroids2.create(x,y, 'asteroids2');
+                    jellies = small_jellfish.create(x,y, 'small_jellfish');
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
-                    asteriod.body.width = Phaser.Math.Between(10, 40)/10;
-                    asteriod.body.height = asteriod.body.width;
+                    jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                    jellies.body.height = jellies.body.width;
                     //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                     //physics properties
-                    //asteriod.body.velocity.x = Phaser.Math.Between(20, 60);
-                    //asteriod.body.velocity.y = Phaser.Math.Between(20, 60);
-                    asteriod.body.immovable = true;
-                    asteriod.body.collideWorldBounds = false;
+                    jellies.body.velocity.x = Phaser.Math.Between(-100, 100);
+                    jellies.body.velocity.y = Phaser.Math.Between(-100, 100);
+                    jellies.body.immovable = true;
+                    jellies.body.collideWorldBounds = false;
                 }
-
-            });
-
-            this.physics.add.overlap(bullets,asteroids2, function(player,asteroids2){
-
-                asteroids2.destroy();
-                score+=100;
-
-            });
-
             
-            this.physics.add.collider(player, asteroids, enemyHitsPlayer, function(player, asteroids)
-            {
                 player.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
             });
 
-            this.physics.add.collider(player, asteroids1, enemyHitsPlayer, function(player, asteroids)
+            this.physics.add.collider(player, med_jellyfish, enemyHitsPlayer, function(player, med_jellyfish)
             {
                 // player.disableBody(true, true);
                 // life--;
                 // isPlayerDied = true;
+                var x = med_jellyfish.x;
+                var y = med_jellyfish.y;
+                var spark = sparks.get();
+                //var spark = sparks.create(x,y, 'spark');
+                if(spark)
+                {
+                  spark.shock(med_jellyfish);
+                }
+
+
                 player.setBounce(10, 10);
-                playerCollideLifeCounter--;
             });
 
-            this.physics.add.collider(player, asteroids2, enemyHitsPlayer, function(player, asteroids)
+            this.physics.add.collider(player, small_jellfish, enemyHitsPlayer, function(player, small_jellfish)
             {
                 // player.disableBody(true, true);
                 // life--;
                 // isPlayerDied = true;
+                var spark = sparks.get();
+                //var spark = sparks.create(x,y, 'spark');
+                if(spark)
+                {
+                  spark.shock(small_jellfish);
+
+                }
+
                 player.setBounce(10, 10);
             });
 
         }
-  
 
-        
+
+
 
         function Update(time)
         {
+          this.physics.world.wrap(jellyfish);
+          this.physics.world.wrap(med_jellyfish);
+          this.physics.world.wrap(small_jellfish);
+          this.physics.world.wrap(player);
+          emiterPosition = player.getBottomRight();
+
             if(life == 0)
             {
                 isGameOver = true;
@@ -474,7 +492,6 @@
                 if (keys.left.isDown)
                 {
                     player.setAngularVelocity(-300);
-
                 }
                 else if (keys.right.isDown)
                 {
@@ -515,7 +532,6 @@
                     score++;
                 }
 
-                
             }
             else{
                 gameOverText.setVisible(true);
