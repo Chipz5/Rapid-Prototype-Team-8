@@ -47,7 +47,7 @@
         var fire;
         var jellyfish;
         var med_jellyfish;
-        var small_jellfish;
+        var small_jellyfish;
         var sparks;
         var text;
         var score = 0;
@@ -66,9 +66,27 @@
         var playerImage2;
         var playerImage3;
 
+        var playerCollider1;
+        var playerCollider2;
+        var playerCollider3;
+
+        var player2Collider1;
+        var player2Collider2;
+        var player2Collider3;
+
+        var player3Collider1;
+        var player3Collider2;
+        var player3Collider3;
+
         var playerCollideLifeCounter = 3;
 
         var isFirePowered = false;
+        var Invincible = false;
+        var InvincibleTime = 300;
+        var InvincibleTimeTracker = true;
+        var InvinciCounter = 0;
+
+        var timedEvent;
 
         function Preload()
         {
@@ -88,7 +106,7 @@
 
             //this.load.image('background', 'assets/tests/space/nebula.jpg');
             this.load.image('bullet', 'New_Laser_Blast.png');
-            this.load.image('powerBullet', 'Charged_Laser_Blast');
+            this.load.image('powerBullet', 'Charged_Laser_Blast.png');
             
             //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
             this.load.atlas('space', 'space.png', 'space.json');
@@ -105,7 +123,7 @@
 
             this.load.image('jellyfish', 'Jellyfish.png');
             this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
-            this.load.image('small_jellfish', 'Small_Jellyfish.png');
+            this.load.image('small_jellyfish', 'Small_Jellyfish.png');
             this.load.image('shock', 'Shock_Field.png');
 
 
@@ -164,6 +182,69 @@
                 }
 
             });
+
+
+
+
+
+
+
+
+            var poweredBullet = new Phaser.Class({
+
+                Extends: Phaser.Physics.Arcade.Image,
+
+                initialize:
+
+                function Bullet (scene)
+                {
+                    Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'powerBullet', 'blaster');
+
+                    this.setBlendMode(1);
+                    this.setDepth(1);
+
+                    this.speed = 300;
+                    this.lifespan = 1000;
+
+                    this._temp = new Phaser.Math.Vector2();
+                },
+
+                fire: function (player)
+                {
+                    this.lifespan = 1000;
+
+                    this.setActive(true);
+                    this.setVisible(true);
+
+                    this.setAngle(player.body.rotation);
+                    this.setPosition(player.x, player.y);
+                    this.body.reset(player.x, player.y);
+
+                    var angle = Phaser.Math.DegToRad(player.body.rotation);
+
+                    this.scene.physics.velocityFromRotation(angle, this.speed, this.body.velocity);
+
+                    this.body.velocity.x *= 2;
+                    this.body.velocity.y *= 2;
+                },
+
+                update: function (time, delta)
+                {
+                    this.lifespan -= delta;
+
+                    if (this.lifespan <= 0)
+                    {
+                        this.setActive(false);
+                        this.setVisible(false);
+                        this.body.stop();
+                    }
+                }
+
+            });
+
+
+
+
 
 
             var Shock = new Phaser.Class({
@@ -226,15 +307,13 @@
 
 
 
-
-
-
-
             bg = this.add.image(600, 400, 'background');
 
-            player = this.physics.add.image(700, 350, 'ship');
-            playerImage2 = this.physics.add.image(700, 350, 'ship2');
+  
+
             playerImage3 = this.physics.add.image(700, 350, 'ship3');
+            playerImage2 = this.physics.add.image(700, 350, 'ship2');
+            player = this.physics.add.image(700, 350, 'ship');
 
             player.flipX = true;
             playerImage2.flipX = true;
@@ -300,22 +379,35 @@
             playerImage2.disableBody(true, true);
             playerImage3.disableBody(true, true);
 
-            console.log(player);
 
             keys = this.input.keyboard.createCursorKeys();
             emitter.startFollow(player);
 
 
-
             bullets = this.physics.add.group({
                 classType: Bullet,
-                maxSize: 5,
+                maxSize: 1,
                 runChildUpdate: true
             });
 
+
+
+
+            poweredBullets = this.physics.add.group({
+                classType: poweredBullet,
+                maxSize: 1,
+                runChildUpdate: true
+            });
+
+
+
+
+
+
+
             sparks = this.physics.add.group({
                 classType: Shock,
-                maxSize: 5,
+                maxSize: 1,
                 runChildUpdate: true
             });
 
@@ -337,6 +429,8 @@
             var numJellies = Phaser.Math.Between(5,10);
             var jellies;
 
+
+
             for (var i = 0; i < numJellies; i++) {
                 //add sprite
                 jellies = jellyfish.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jellyfish');
@@ -354,8 +448,8 @@
             med_jellyfish = this.physics.add.group()
             med_jellyfish.enableBody = true;
             var jellies;
-            this.physics.add.collider(bullets,jellyfish, function(player,jellyfish){
 
+            this.physics.add.collider(bullets,jellyfish, function(player,jellyfish){
                 var x = jellyfish.x;
                 var y = jellyfish.y;
                 jellyfish.destroy();
@@ -376,9 +470,17 @@
 
             });
 
-            small_jellfish = this.physics.add.group()
-            small_jellfish.enableBody = true;
+
+
+
+
+
+
+            small_jellyfish = this.physics.add.group()
+            small_jellyfish.enableBody = true;
             var jellies;
+
+
             this.physics.add.collider(bullets,med_jellyfish, function(player,med_jellyfish){
 
                 var x = med_jellyfish.x;
@@ -387,28 +489,46 @@
                 score+=100;
                 for (var i = 0; i < 2; i++) {
                 //add sprite
-                    jellies = small_jellfish.create(x,y, 'small_jellfish');
+                    jellies = small_jellyfish.create(x,y, 'small_jellyfish');
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
                     jellies.body.height = jellies.body.width;
                     //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                     //physics properties
-                    jellies.body.velocity.x = Phaser.Math.Between(-100, 100);
-                    jellies.body.velocity.y = Phaser.Math.Between(-100, 100);
+                    jellies.body.velocity.x = Phaser.Math.Between(-80, 80);
+                    jellies.body.velocity.y = Phaser.Math.Between(-80, 80);
                     jellies.body.immovable = true;
                     jellies.body.collideWorldBounds = false;
                 }
-            
-                player.disableBody(true, true);
-                life--;
-                isPlayerDied = true;
+
             });
 
-            this.physics.add.collider(player, med_jellyfish, enemyHitsPlayer, function(player, med_jellyfish)
+
+
+
+            this.physics.add.collider(bullets,small_jellyfish, function(player,small_jellyfish){
+                small_jellyfish.destroy();
+                score+=100;
+
+            });
+
+
+
+
+
+            playerCollider1 = this.physics.add.collider(player, jellyfish, function(player,jellyfish){
+                player.disableBody(true, true);
+                playerImage2.disableBody(true, true);
+                playerImage3.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+
+            });
+
+
+
+            playerCollider2 = this.physics.add.collider(player, med_jellyfish, enemyHitsPlayer, function(player, med_jellyfish)
             {
-                // player.disableBody(true, true);
-                // life--;
-                // isPlayerDied = true;
                 var x = med_jellyfish.x;
                 var y = med_jellyfish.y;
                 var spark = sparks.get();
@@ -420,9 +540,22 @@
 
 
                 player.setBounce(10, 10);
+
+                isFirePowered = true;
+                player.disableBody(true, true);
+                playerImage2.enableBody(true, player.x, player.y, true, true);
+                playerImage2.rotation = player.rotation;
+                playerImage2.setBounce(10, 10);
+                playerImage2.alpha = 0.5;
+                Invincible = true;
+                InvincibleTimeTracker = false;
+
+                //timedEvent = this.time.delayedCall(3000, InvincibleEvent, [], this);
+                //timedEvent = this.time.addEvent({ delay: 2000, callback: this.InvincibleEvent, callbackScope: this });
             });
 
-            this.physics.add.collider(player, small_jellfish, enemyHitsPlayer, function(player, small_jellfish)
+
+            playerCollider3 = this.physics.add.collider(player, small_jellyfish, enemyHitsPlayer, function(player, small_jellyfish)
             {
                 // player.disableBody(true, true);
                 // life--;
@@ -431,12 +564,144 @@
                 //var spark = sparks.create(x,y, 'spark');
                 if(spark)
                 {
-                  spark.shock(small_jellfish);
+                  spark.shock(small_jellyfish);
 
                 }
 
                 player.setBounce(10, 10);
+
+                isFirePowered = true;
+                player.disableBody(true, true);
+                playerImage2.enableBody(true, player.x, player.y, true, true);
+                playerImage2.rotation = player.rotation;
+                playerImage2.setBounce(10, 10);
+                playerImage2.alpha = 0.5;
+                Invincible = true;
+                InvincibleTimeTracker = false;
+
             });
+
+
+
+
+
+
+
+
+
+
+
+
+            player2Collider1 = this.physics.add.collider(playerImage2, jellyfish, function(playerImage2,jellyfish){
+                playerImage2.disableBody(true, true);
+                playerImage3.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+
+
+            player2Collider2 = this.physics.add.collider(playerImage2, med_jellyfish, enemyHitsPlayer, function(playerImage2, med_jellyfish)
+            {
+
+                    var x = med_jellyfish.x;
+                    var y = med_jellyfish.y;
+                    var spark = sparks.get();
+                    //var spark = sparks.create(x,y, 'spark');
+                    if(spark)
+                    {
+                    spark.shock(med_jellyfish);
+                    }
+
+
+                    playerImage2.setBounce(10, 10);
+
+                    isFirePowered = true;
+                    playerImage2.disableBody(true, true);
+                    playerImage3.enableBody(true, playerImage2.x, playerImage2.y, true, true);
+                    playerImage3.rotation = playerImage2.rotation;
+                    playerImage3.setBounce(10, 10);
+                    playerImage3.alpha = 0.5;
+                    Invincible = true;
+                    InvincibleTimeTracker = false;
+                
+            });
+
+
+            player2Collider3 = this.physics.add.collider(playerImage2, small_jellyfish, enemyHitsPlayer, function(playerImage2, small_jellyfish)
+            {
+                // player.disableBody(true, true);
+                // life--;
+                // isPlayerDied = true;
+                var spark = sparks.get();
+                //var spark = sparks.create(x,y, 'spark');
+                if(spark)
+                {
+                  spark.shock(small_jellyfish);
+
+                }
+
+                playerImage2.setBounce(10, 10);
+
+                isFirePowered = true;
+                playerImage2.disableBody(true, true);
+                playerImage3.enableBody(true, playerImage2.x, playerImage2.y, true, true);
+                playerImage3.rotation = playerImage2.rotation;
+                playerImage3.setBounce(10, 10);
+                playerImage3.alpha = 0.5;
+                Invincible = true;
+                InvincibleTimeTracker = false;
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            player3Collider1 = this.physics.add.collider(playerImage3, jellyfish, function(playerImage3,jellyfish){
+                playerImage3.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+
+
+            player3Collider2 = this.physics.add.collider(playerImage3, med_jellyfish, enemyHitsPlayer, function(playerImage3, med_jellyfish)
+            {
+                playerImage3.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+
+            player3Collider3 = this.physics.add.collider(playerImage3, small_jellyfish, enemyHitsPlayer, function(playerImage3, small_jellyfish)
+            {
+                playerImage3.disableBody(true, true);
+                life--;
+                isPlayerDied = true;
+            });
+
+
+
+
+            player2Collider1.active = false;
+            player2Collider2.active = false;
+            player2Collider3.active = false;
+            player3Collider1.active = false;
+            player3Collider2.active = false;
+            player3Collider3.active = false;
+
 
         }
 
@@ -447,7 +712,7 @@
         {
           this.physics.world.wrap(jellyfish);
           this.physics.world.wrap(med_jellyfish);
-          this.physics.world.wrap(small_jellfish);
+          this.physics.world.wrap(small_jellyfish);
           this.physics.world.wrap(player);
           emiterPosition = player.getBottomRight();
 
@@ -462,12 +727,52 @@
                 //player.texture = 'asteroids';
             }
 
+            if(InvincibleTimeTracker)
+            {
+                InvincibleTime = time;
+            }
+
+            if(Invincible)
+            {
+                if(player2Collider1.active == false)
+                {
+                    InvinciCounter = 1;
+                    if(time > InvincibleTime + 3000)
+                    {
+                        
+                        playerImage2.alpha = 1;
+                        player2Collider1.active = true;
+                        player2Collider2.active = true;
+                        player2Collider3.active = true;
+                        InvincibleTimeTracker = true;
+                        Invincible = false;
+                    }
+                }
+                else if (player3Collider1.active == false && player2Collider1.active)
+                {
+                    InvinciCounter = 2;
+                    if(time > InvincibleTime + 3000)
+                    {
+                        console.log(InvincibleTime);
+                        playerImage3.alpha = 1;
+                        player3Collider1.active = true;
+                        player3Collider2.active = true;
+                        player3Collider3.active = true;
+                        InvincibleTimeTracker = true;
+                        Invincible = false;
+                    }
+                }
+
+
+            }
+
+
+
 
 
             if(!isGameOver)
             {
 
-                //console.log(player.rotation);
                 if(player.rotation < -1.5 || player.rotation > 1.5)
                 {
                     player.flipY = true;
@@ -475,8 +780,27 @@
                 else if(-1.5  <=player.rotation <= 1.5)
                 {
                     player.flipY = false;                    
-                    //console.log("false");
                 }
+
+                if(playerImage2.rotation < -1.5 || playerImage2.rotation > 1.5)
+                {
+                    playerImage2.flipY = true;
+                }
+                else if(-1.5  <=playerImage2.rotation <= 1.5)
+                {
+                    playerImage2.flipY = false;                    
+                }
+
+                if(playerImage3.rotation < -1.5 || playerImage3.rotation > 1.5)
+                {
+                    playerImage3.flipY = true;
+                }
+                else if(-1.5  <=playerImage3.rotation <= 1.5)
+                {
+                    playerImage3.flipY = false;                    
+                }
+
+
 
                 if (keys.up.isDown)
                 {
@@ -487,36 +811,67 @@
                 else
                 {
                     player.setAcceleration(0);
+                    playerImage2.setAcceleration(0);
+                    playerImage3.setAcceleration(0);
                 }
 
                 if (keys.left.isDown)
                 {
                     player.setAngularVelocity(-300);
+                    playerImage2.setAngularVelocity(-300);
+                    playerImage3.setAngularVelocity(-300);
                 }
                 else if (keys.right.isDown)
                 {
                     player.setAngularVelocity(300);
+                    playerImage2.setAngularVelocity(300);
+                    playerImage3.setAngularVelocity(300);
                 }
                 else
                 {
                     player.setAngularVelocity(0);
+                    playerImage2.setAngularVelocity(0);
+                    playerImage3.setAngularVelocity(0);
                 }
 
 
                 if (fire.isDown && !isPlayerDied && time > fireTime)
                 {
+                    console.log(InvinciCounter);
                     if(!isFirePowered)
                     {
                         var bullet = bullets.get();
 
                         if (bullet)
                         {
-                            bullet.fire(player);
+                            if(InvinciCounter == 0)
+                                bullet.fire(player);
+
+                            else if(InvinciCounter == 1)
+                                bullet.fire(playerImage2);
+
+                            else if(InvinciCounter == 2)
+                                bullet.fire(playerImage3);
                             fireTime = time + 50;
                         }
                     }
                     else
                     {
+                        var bullet = poweredBullets.get();
+
+                        if (bullet)
+                        {
+                            if(InvinciCounter == 0)
+                                bullet.fire(player);
+
+                            else if(InvinciCounter == 1)
+                                bullet.fire(playerImage2);
+
+                            else if(InvinciCounter == 2)
+                                bullet.fire(playerImage3);
+                            fireTime = time + 50;
+                        }
+                        isFirePowered = false;
 
                     }
 
@@ -528,7 +883,15 @@
                     player.enableBody(true, 700, 350, true, true);
                     //player.x = 300;
                     //player.y = 400;
+                    InvinciCounter = 0;
                     isPlayerDied = false;
+
+                    player2Collider1.active = false;
+                    player2Collider2.active = false;
+                    player2Collider3.active = false;
+                    player3Collider1.active = false;
+                    player3Collider2.active = false;
+                    player3Collider3.active = false;
                     score++;
                 }
 
@@ -571,6 +934,17 @@
             //Score+=1;
 
 
+        }
+
+        function InvincibleEvent()
+        {
+            if(playerCollider1.active == false)
+            {
+                player2Collider1.active=true;
+                player2Collider2.active=true;
+                player2Collider3.active=true;
+                playerImage2.alpha = 1;
+            }
         }
 
 
