@@ -16,7 +16,8 @@
 
     <script>
         //import background from "./Assets/Background.jpg";
-
+        var gameScene = new Phaser.Scene("game");
+        var gameScene1 = new Phaser.Scene("game1");
         var config = {
             type: Phaser.AUTO,
             width: 800,
@@ -27,13 +28,9 @@
                     fps: 60,
                     gravity: { y: 0 }
                 }
-            },
-            scene: {
-                preload: Preload,
-                create: Create,
-                update: Update
             }
         };
+
 
         const FPS = 30;
         const SHIP_SIZE = 30;
@@ -63,7 +60,23 @@
         var emiterPosition;
         var player;
 
-        function Preload()
+        game.scene.add("game", gameScene);
+        game.scene.add("game1", gameScene1);
+// Start the title scene
+game.scene.start("game");
+
+        gameScene1.preload = function() {
+          this.load.setBaseURL('./Assets/');
+          //this.load.image('background', "./Assets/Background.jpg");
+          this.load.image('background', "Background.jpg");
+        };
+
+        gameScene1.create = function() {
+          var bg = this.add.image(600, 400, 'background');
+        };
+
+
+        gameScene.preload = function()
         {
 
 
@@ -84,16 +97,50 @@
             //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
             this.load.atlas('space', 'space.png', 'space.json');
 
-            this.load.image('jellyfish', 'Jellyfish.png');
-            this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
-            this.load.image('small_jellfish', 'Small_Jellyfish.png');
+            //this.load.image('jellyfish', 'Jellyfish.png');
+            //this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
+            //this.load.image('small_jellfish', 'Small_Jellyfish.png');
             this.load.image('shock', 'Shock_Field.png');
+            this.load.spritesheet("jellyfish","Big_Jellyfish_Anim.png",{
+              frameWidth: 93,
+              frameHeight: 250
+            });
+
+            this.load.spritesheet("med_jellyfish","Mid_Jellyfish_Anim.png",{
+              frameWidth: 46,
+              frameHeight: 68
+            });
+
+            this.load.spritesheet("small_jellfish","Small_Jellyfish_Anim.png",{
+              frameWidth: 30,
+              frameHeight: 28
+            });
 
 
         }
 
-        function Create()
+        gameScene.create = function()
         {
+          this.anims.create({
+            key:"jelly_anim",
+            frames: this.anims.generateFrameNumbers("jellyfish"),
+            frameRate: 2,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key:"mid_jelly_anim",
+            frames: this.anims.generateFrameNumbers("med_jellyfish"),
+            frameRate: 2,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key:"small_jelly_anim",
+            frames: this.anims.generateFrameNumbers("small_jellfish"),
+            frameRate: 2,
+            repeat: -1
+          });
 
             var Bullet = new Phaser.Class({
 
@@ -272,21 +319,27 @@
             gameOverText = this.add.text(275, 268, "Game Over!", {fontSize: '40px', fill:'#ffffff'});
             gameOverText.setVisible(false);
 
-            jellyfish = this.physics.add.group();
-
+            //jellyfish = this.physics.add.group();
+            jellyfish = this.physics.add.group({
+                key: 'jelly_anim',
+                repeat: -1,
+                //setXY: { x: 12, y: 0, stepX: 70 }
+            });
             //enable physics in them
             jellyfish.enableBody = true;
-
+            //jellyfish.playAnimation('jelly_anim');
     //phaser's random number generator
             var numJellies = Phaser.Math.Between(5,10);
             var jellies;
 
             for (var i = 0; i < numJellies; i++) {
                 //add sprite
-                jellies = jellyfish.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jellyfish');
+                jellies = jellyfish.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jelly_anim');
+                //jellies = jellyfish.add.sprite(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jellyfish');
+                jellies.play("jelly_anim");
                 //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
-                jellies.body.width = Phaser.Math.Between(10, 40)/10;
-                jellies.body.height = jellies.body.width;
+                //jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                //jellies.body.height = jellies.body.width;
                 //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
                 //physics properties
                 jellies.setScale(Phaser.Math.Between(4, 8)/10);
@@ -295,7 +348,12 @@
                 jellies.body.immovable = true;
                 jellies.body.collideWorldBounds = false;
             }
-            med_jellyfish = this.physics.add.group()
+            //med_jellyfish = this.physics.add.group();
+            med_jellyfish = this.physics.add.group({
+                key: 'mid_jelly_anim',
+                repeat: -1,
+                //setXY: { x: 12, y: 0, stepX: 70 }
+            });
             med_jellyfish.enableBody = true;
             var jellies;
             this.physics.add.collider(bullets,jellyfish, function(player,jellyfish){
@@ -306,7 +364,8 @@
                 score+=100;
                 for (var i = 0; i < 2; i++) {
             //add sprite
-                    jellies = med_jellyfish.create(x,y, 'med_jellyfish');
+                    jellies = med_jellyfish.create(x,y, 'mid_jelly_anim');
+                    jellies.play("mid_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
                     jellies.body.height = jellies.body.width;
@@ -319,8 +378,11 @@
                 }
 
             });
-
-            small_jellfish = this.physics.add.group()
+            small_jellfish = this.physics.add.group({
+                key: 'small_jelly_anim',
+                repeat: -1,
+                //setXY: { x: 12, y: 0, stepX: 70 }
+            });
             small_jellfish.enableBody = true;
             var jellies;
             this.physics.add.collider(bullets,med_jellyfish, function(player,med_jellyfish){
@@ -331,7 +393,8 @@
                 score+=100;
                 for (var i = 0; i < 2; i++) {
                 //add sprite
-                    jellies = small_jellfish.create(x,y, 'small_jellfish');
+                    jellies = small_jellfish.create(x,y, 'small_jelly_anim');
+                    jellies.play("small_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
                     jellies.body.height = jellies.body.width;
@@ -399,7 +462,7 @@
 
 
 
-        function Update(time)
+        gameScene.update = function(time)
         {
           this.physics.world.wrap(jellyfish);
           this.physics.world.wrap(med_jellyfish);
@@ -407,11 +470,14 @@
           this.physics.world.wrap(player);
             emiterPosition = player.getBottomRight();
 
-            if(life == 0)
+            if(life == 2)
             {
-                isGameOver = true;
+              //game.scene.start(gameScene1);
+                //isGameOver = true;
             }
-
+            if(jellyfish.countActive(true) == 0 && med_jellyfish.countActive(true) == 0 && small_jellfish.countActive(true) == 0){
+              game.scene.start("game1");
+            }
             if(!isGameOver)
             {
                 if (keys.up.isDown)
