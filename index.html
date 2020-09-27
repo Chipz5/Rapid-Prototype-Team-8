@@ -365,13 +365,13 @@
             playerImage2.setDamping(true);
             playerImage2.setDrag(0.99);
             playerImage2.setMaxVelocity(200);
-            playerImage2.setCollideWorldBounds(true);
+            //playerImage2.setCollideWorldBounds(true);
             playerImage2.setScale(0.5);
 
             playerImage3.setDamping(true);
             playerImage3.setDrag(0.99);
             playerImage3.setMaxVelocity(200);
-            playerImage3.setCollideWorldBounds(true);
+            //playerImage3.setCollideWorldBounds(true);
             playerImage3.setScale(0.5);
 
             playerImage2.disableBody(true, true);
@@ -468,6 +468,8 @@
 
             });
 
+        
+
 
 
 
@@ -503,12 +505,94 @@
 
 
 
-
             this.physics.add.collider(bullets,small_jellyfish, function(player,small_jellyfish){
                 small_jellyfish.destroy();
                 score+=100;
 
             });
+
+
+
+
+
+
+
+
+
+
+
+            this.physics.add.overlap(poweredBullets,jellyfish, function(player,jellyfish){
+                var x = jellyfish.x;
+                var y = jellyfish.y;
+                jellyfish.destroy();
+                score+=100;
+                for (var i = 0; i < 2; i++) {
+            //add sprite
+                    jellies = med_jellyfish.create(x,y, 'med_jellyfish');
+                    //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+                    jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                    jellies.body.height = jellies.body.width;
+                    //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+                    //physics properties
+                    jellies.body.velocity.x = Phaser.Math.Between(-80, 80);
+                    jellies.body.velocity.y = Phaser.Math.Between(-80, 80);
+                    jellies.body.immovable = true;
+                    jellies.body.collideWorldBounds = false;
+                }
+
+            });
+
+            this.physics.add.overlap(poweredBullets,med_jellyfish, function(player,med_jellyfish){
+
+                var x = med_jellyfish.x;
+                var y = med_jellyfish.y;
+                med_jellyfish.destroy();
+                score+=100;
+                for (var i = 0; i < 2; i++) {
+                //add sprite
+                    jellies = small_jellyfish.create(x,y, 'small_jellyfish');
+                    //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
+                    jellies.body.width = Phaser.Math.Between(10, 40)/10;
+                    jellies.body.height = jellies.body.width;
+                    //Phaser.Actions.ScaleXY(asteriod, asteriod.body.width, asteriod.body.width);
+                    //physics properties
+                    jellies.body.velocity.x = Phaser.Math.Between(-80, 80);
+                    jellies.body.velocity.y = Phaser.Math.Between(-80, 80);
+                    jellies.body.immovable = true;
+                    jellies.body.collideWorldBounds = false;
+                }
+
+                });
+     
+
+
+
+
+            this.physics.add.overlap(poweredBullets,small_jellyfish, function(player,small_jellyfish){
+                small_jellyfish.destroy();
+                score+=100;
+
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
