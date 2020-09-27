@@ -51,14 +51,21 @@
         var life = 3;
         var lifeText;
         var gameOverText;
+        var stunnedText;
+        var congratsText;
+        var respawnText;
 
         var isPlayerDied = false;
         var isGameOver = false;
+        var isCanFire = true;
+        var FireStunedCountDown = 300;
 
         var fireTime = 50;
         var bg;
         var emiterPosition;
         
+        var playerSpeed = 200;
+
         var player;
         var playerImage2;
         var playerImage3;
@@ -82,6 +89,8 @@
         var InvincibleTime = 300;
         var InvincibleTimeTracker = true;
         var InvinciCounter = 0;
+
+        var TotalJelliesCounter = 0;
 
         var timedEvent;
 
@@ -116,30 +125,12 @@ game.scene.start("game");
   
 
             //this.load.setBaseURL('http://labs.phaser.io');
-
-            //this.load.image('background', 'assets/tests/space/nebula.jpg');
             this.load.image('bullet', 'New_Laser_Blast.png');
             this.load.image('powerBullet', 'Charged_Laser_Blast.png');
             
-            //this.load.atlas('space', 'assets/tests/space/space.png', 'assets/tests/space/space.json');
             this.load.atlas('space', 'space.png', 'space.json');
 
-            this.load.image('asteroids', 'Jellyfish.png');
-            this.load.image('asteroids1', 'Mid_Jellyfish.png');
-            this.load.image('asteroids2', 'New_Small_Jellyfish.png');
-            
-
-
-            //this.load.setBaseURL('http://labs.phaser.io');
-
             this.load.image('background', 'assets/tests/space/nebula.jpg');
-
-            // this.load.image('jellyfish', 'Jellyfish.png');
-            // this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
-            // this.load.image('small_jellyfish', 'Small_Jellyfish.png');
-            //this.load.image('jellyfish', 'Jellyfish.png');
-            //this.load.image('med_jellyfish', 'Mid_Jellyfish.png');
-            //this.load.image('small_jellfish', 'Small_Jellyfish.png');
             this.load.image('shock', 'Shock_Field.png');
             this.load.spritesheet("jellyfish","Big_Jellyfish_Anim.png",{
               frameWidth: 93,
@@ -156,6 +147,7 @@ game.scene.start("game");
               frameHeight: 28
             });
 
+            
 
         }
 
@@ -250,7 +242,8 @@ game.scene.start("game");
                 function Bullet (scene)
                 {
                     Phaser.Physics.Arcade.Image.call(this, scene, 0, 0, 'powerBullet', 'blaster');
-
+                    this.setScale(15, 1);
+                    this.setOrigin(0.1, 0.5);
                     this.setBlendMode(1);
                     this.setDepth(1);
 
@@ -440,18 +433,11 @@ game.scene.start("game");
             });
 
 
-
-
             poweredBullets = this.physics.add.group({
                 classType: poweredBullet,
-                maxSize: 1,
+                maxSize: 5,
                 runChildUpdate: true
             });
-
-
-
-
-
 
 
             sparks = this.physics.add.group({
@@ -460,14 +446,22 @@ game.scene.start("game");
                 runChildUpdate: true
             });
 
+
+
             fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
             respawnKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
             text = this.add.text(32, 32, 'Score: 0', {fontSize: '32px',  fill:'#ffffff'});
-            lifeText = this.add.text(600, 32, 'Life: 0', {fontSize: '32px',  fill:'#ffffff'});
-            gameOverText = this.add.text(275, 268, "Game Over!", {fontSize: '40px', fill:'#ffffff'});
+            lifeText = this.add.text(1250, 32, 'Life: 0', {fontSize: '32px',  fill:'#ffffff'});
+            stunnedText = this.add.text(350, 32, 'You Are Stunned, Time To Fire Again: 0', {fontSize: '32px',  fill:'#ffffff'} );
+            stunnedText.setVisible(false);
+            gameOverText = this.add.text(430, 300, "Game Over! F5 To Restart", {fontSize: '40px', fill:'#ffffff'});
             gameOverText.setVisible(false);
+            congratsText = this.add.text(380, 300, "Congratulations! Jellies Are Eliminated!", {fontSize: '28px', fill:'#ffffff'});
+            congratsText.setVisible(false);
+            respawnText = this.add.text(480, 300, "Press R To Respawn", {fontSize: '40px', fill:'#ffffff'});
+            respawnText.setVisible(false);
 
             //jellyfish = this.physics.add.group();
             jellyfish = this.physics.add.group({
@@ -475,10 +469,11 @@ game.scene.start("game");
                 repeat: -1,
                 //setXY: { x: 12, y: 0, stepX: 70 }
             });
+
             //enable physics in them
             jellyfish.enableBody = true;
             //jellyfish.playAnimation('jelly_anim');
-    //phaser's random number generator
+            //phaser's random number generator
             var numJellies = Phaser.Math.Between(5,10);
             var jellies;
 
@@ -487,6 +482,7 @@ game.scene.start("game");
             for (var i = 0; i < numJellies; i++) {
                 //add sprite
                 jellies = jellyfish.create(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jelly_anim');
+                TotalJelliesCounter++;
                 //jellies = jellyfish.add.sprite(Phaser.Math.Between(0, this.game.config.width),Phaser.Math.Between(0, this.game.config.height), 'jellyfish');
                 jellies.play("jelly_anim");
                 //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
@@ -500,6 +496,7 @@ game.scene.start("game");
                 jellies.body.immovable = true;
                 jellies.body.collideWorldBounds = false;
             }
+
             //med_jellyfish = this.physics.add.group();
             med_jellyfish = this.physics.add.group({
                 key: 'mid_jelly_anim',
@@ -514,9 +511,11 @@ game.scene.start("game");
                 var y = jellyfish.y;
                 jellyfish.destroy();
                 score+=100;
+                TotalJelliesCounter--;
                 for (var i = 0; i < 2; i++) {
             //add sprite
                     jellies = med_jellyfish.create(x,y, 'mid_jelly_anim');
+                    TotalJelliesCounter++;
                     jellies.play("mid_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
@@ -529,13 +528,17 @@ game.scene.start("game");
                     jellies.body.collideWorldBounds = false;
                 }
 
+                bullets.setVisible(false);
+                bullets.disableBody = true;
             });
-            small_jellfish = this.physics.add.group({
+
+
+            small_jellyfish = this.physics.add.group({
                 key: 'small_jelly_anim',
                 repeat: -1,
                 //setXY: { x: 12, y: 0, stepX: 70 }
             });
-            small_jellfish.enableBody = true;
+            small_jellyfish.enableBody = true;
             var jellies;
 
 
@@ -545,9 +548,11 @@ game.scene.start("game");
                 var y = med_jellyfish.y;
                 med_jellyfish.destroy();
                 score+=100;
+                TotalJelliesCounter--;
                 for (var i = 0; i < 2; i++) {
                 //add sprite
-                    jellies = small_jellfish.create(x,y, 'small_jelly_anim');
+                    jellies = small_jellyfish.create(x,y, 'small_jelly_anim');
+                    TotalJelliesCounter++;
                     jellies.play("small_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
@@ -559,18 +564,19 @@ game.scene.start("game");
                     jellies.body.immovable = true;
                     jellies.body.collideWorldBounds = false;
                 }
-
+                bullets.setVisible(false);
+                bullets.disableBody = true;
             });
 
 
 
             this.physics.add.collider(bullets,small_jellyfish, function(player,small_jellyfish){
+                TotalJelliesCounter--;
                 small_jellyfish.destroy();
                 score+=100;
-
+                bullets.setVisible(false);
+                bullets.disableBody = true;
             });
-
-
 
 
 
@@ -585,9 +591,12 @@ game.scene.start("game");
                 var y = jellyfish.y;
                 jellyfish.destroy();
                 score+=100;
+                TotalJelliesCounter--;
                 for (var i = 0; i < 2; i++) {
             //add sprite
-                    jellies = med_jellyfish.create(x,y, 'med_jellyfish');
+                    jellies = med_jellyfish.create(x,y, 'mid_jelly_anim');
+                    TotalJelliesCounter++;
+                    jellies.play("mid_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
                     jellies.body.height = jellies.body.width;
@@ -601,15 +610,20 @@ game.scene.start("game");
 
             });
 
+
+
             this.physics.add.overlap(poweredBullets,med_jellyfish, function(player,med_jellyfish){
 
                 var x = med_jellyfish.x;
                 var y = med_jellyfish.y;
                 med_jellyfish.destroy();
                 score+=100;
+                TotalJelliesCounter--;
                 for (var i = 0; i < 2; i++) {
                 //add sprite
-                    jellies = small_jellyfish.create(x,y, 'small_jellyfish');
+                    jellies = small_jellyfish.create(x,y, 'small_jelly_anim');
+                    TotalJelliesCounter++;
+                    jellies.play("small_jelly_anim");
                     //asteriod.scale.setTo(Phaser.Math.Between(10, 40)/10);
                     jellies.body.width = Phaser.Math.Between(10, 40)/10;
                     jellies.body.height = jellies.body.width;
@@ -630,27 +644,9 @@ game.scene.start("game");
             this.physics.add.overlap(poweredBullets,small_jellyfish, function(player,small_jellyfish){
                 small_jellyfish.destroy();
                 score+=100;
+                TotalJelliesCounter--;
 
             });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -663,6 +659,7 @@ game.scene.start("game");
                 playerImage3.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
+                respawnText.setVisible(true);
 
             });
 
@@ -710,8 +707,9 @@ game.scene.start("game");
                 }
 
                 player.setBounce(10, 10);
-
-                isFirePowered = true;
+                
+                playerSpeed -= 20;
+                isCanFire = false;
                 player.disableBody(true, true);
                 playerImage2.enableBody(true, player.x, player.y, true, true);
                 playerImage2.rotation = player.rotation;
@@ -738,6 +736,7 @@ game.scene.start("game");
                 playerImage3.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
+                respawnText.setVisible(true);
             });
 
 
@@ -757,6 +756,7 @@ game.scene.start("game");
 
                     playerImage2.setBounce(10, 10);
 
+                    playerSpeed -= 20;
                     isFirePowered = true;
                     playerImage2.disableBody(true, true);
                     playerImage3.enableBody(true, playerImage2.x, playerImage2.y, true, true);
@@ -784,7 +784,7 @@ game.scene.start("game");
 
                 playerImage2.setBounce(10, 10);
 
-                isFirePowered = true;
+                isCanFire = false;
                 playerImage2.disableBody(true, true);
                 playerImage3.enableBody(true, playerImage2.x, playerImage2.y, true, true);
                 playerImage3.rotation = playerImage2.rotation;
@@ -803,17 +803,11 @@ game.scene.start("game");
 
 
 
-
-
-
-
-
-
-
             player3Collider1 = this.physics.add.collider(playerImage3, jellyfish, function(playerImage3,jellyfish){
                 playerImage3.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
+                respawnText.setVisible(true);
             });
 
 
@@ -823,6 +817,7 @@ game.scene.start("game");
                 playerImage3.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
+                respawnText.setVisible(true);
             });
 
 
@@ -831,10 +826,8 @@ game.scene.start("game");
                 playerImage3.disableBody(true, true);
                 life--;
                 isPlayerDied = true;
+                respawnText.setVisible(true);
             });
-
-
-
 
             player2Collider1.active = false;
             player2Collider2.active = false;
@@ -842,8 +835,6 @@ game.scene.start("game");
             player3Collider1.active = false;
             player3Collider2.active = false;
             player3Collider3.active = false;
-
-
         }
 
 
@@ -859,14 +850,20 @@ game.scene.start("game");
           this.physics.world.wrap(playerImage3);
           emiterPosition = player.getBottomRight();
 
-            if(life == 2)
+            if(life == 0)
             {
-              //game.scene.start(gameScene1);
-                //isGameOver = true;
+                isGameOver = true;
             }
-            if(jellyfish.countActive(true) == 0 && med_jellyfish.countActive(true) == 0 && small_jellfish.countActive(true) == 0){
-              game.scene.start("game1");
+
+            if(TotalJelliesCounter <= 0)
+            {
+                congratsText.setVisible(true);
             }
+
+            // if(jellyfish.countActive(true) == 0 && med_jellyfish.countActive(true) == 0 && small_jellyfish.countActive(true) == 0){
+            //     console.log("asdadasdasdasd");
+            //     game.scene.start("game1");
+            // }
 
             if(playerCollideLifeCounter == 3)
             {
@@ -909,16 +906,29 @@ game.scene.start("game");
                         Invincible = false;
                     }
                 }
-
-
             }
-
 
 
 
 
             if(!isGameOver)
             {
+                if(!isCanFire)
+                {
+                    if(FireStunedCountDown > 0)
+                    {
+                        FireStunedCountDown--;
+                        stunnedText.setVisible(true);
+                        stunnedText.setText('You Are Stunned, Time To Fire Again:' + FireStunedCountDown);
+                    }
+                    else{
+                        stunnedText.setVisible(false);
+                        FireStunedCountDown = 300;
+                        isCanFire = true;
+                    }
+                }
+
+
 
                 if(player.rotation < -1.5 || player.rotation > 1.5)
                 {
@@ -951,9 +961,9 @@ game.scene.start("game");
 
                 if (keys.up.isDown)
                 {
-                    this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
-                    this.physics.velocityFromRotation(playerImage2.rotation, 200, playerImage2.body.acceleration);
-                    this.physics.velocityFromRotation(playerImage3.rotation, 200, playerImage3.body.acceleration);
+                    this.physics.velocityFromRotation(player.rotation, playerSpeed, player.body.acceleration);
+                    this.physics.velocityFromRotation(playerImage2.rotation, playerSpeed, playerImage2.body.acceleration);
+                    this.physics.velocityFromRotation(playerImage3.rotation, playerSpeed, playerImage3.body.acceleration);
                 }
                 else
                 {
@@ -982,9 +992,8 @@ game.scene.start("game");
                 }
 
 
-                if (fire.isDown && !isPlayerDied && time > fireTime)
+                if (fire.isDown && !isPlayerDied && time > fireTime && isCanFire)
                 {
-                    console.log(InvinciCounter);
                     if(!isFirePowered)
                     {
                         var bullet = bullets.get();
@@ -1027,6 +1036,7 @@ game.scene.start("game");
 
                 if (respawnKey.isDown && isPlayerDied)
                 {
+                    respawnText.setVisible(false);
                     player.enableBody(true, 700, 350, true, true);
                     //player.x = 300;
                     //player.y = 400;
