@@ -1,0 +1,8 @@
+
+"homepage": "https://w853245475.github.io/Rapid-Prototype-Team-8",
+"scripts": {
+  "start": "parcel src/index.html -p 8000",
+  "build": "parcel build src/index.html --out-dir dist --public-url /<repo-name>/",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -b master -d dist"
+}
